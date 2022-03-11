@@ -35,12 +35,12 @@ static int requests_here(Elevator e){
 Action requests_nextAction(Elevator e){
     switch(e.dirn){
     case D_Up:
-        return  requests_above(e) ? (Action){D_Up,   EB_Moving}   :
-                requests_here(e)  ? (Action){D_Down, EB_DoorOpen} :
-                requests_below(e) ? (Action){D_Down, EB_Moving}   :
-                                    (Action){D_Stop, EB_Idle}     ;
+        return  requests_above(e) ? (Action){D_Up,   EB_Moving}   : // Is the request above current floor? Set direction upwards, state=moving
+                requests_here(e)  ? (Action){D_Down, EB_DoorOpen} : // Is the request at current floor? Set direction downwards(?), state = open doors
+                requests_below(e) ? (Action){D_Down, EB_Moving}   : // Is the request below current floor? Set direction downwards and state=moving
+                                    (Action){D_Stop, EB_Idle}     ; // Is the request none of these? Direction=Stop, State=idle
     case D_Down:
-        return  requests_below(e) ? (Action){D_Down, EB_Moving}   :
+        return  requests_below(e) ? (Action){D_Down, EB_Moving}   : // Analoguous...
                 requests_here(e)  ? (Action){D_Up,   EB_DoorOpen} :
                 requests_above(e) ? (Action){D_Up,   EB_Moving}   :
                                     (Action){D_Stop, EB_Idle}     ;
@@ -56,15 +56,15 @@ Action requests_nextAction(Elevator e){
 
 
 
-int requests_shouldStop(Elevator e){
+int requests_shouldStop(Elevator e){ //
     switch(e.dirn){
     case D_Down:
-        return
+        return // Bool: If there is a request at current floor or a request beneath while going downwards
             e.requests[e.floor][B_HallDown] ||
             e.requests[e.floor][B_Cab]      ||
             !requests_below(e);
     case D_Up:
-        return
+        return // Bool: if there is a request at current floor or request above while going upwards
             e.requests[e.floor][B_HallUp]   ||
             e.requests[e.floor][B_Cab]      ||
             !requests_above(e);
